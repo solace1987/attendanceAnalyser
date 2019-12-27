@@ -35,10 +35,10 @@ class ReportComponent extends React.Component {
       statusVal: "none",
       deptVal: "none",
       nameVal: "",
-      filteredRec:[],
+      filteredRec: []
     };
     this.onQuery = this.onQuery.bind(this);
-    this.onvalueChange=this.onvalueChange.bind(this);
+    this.onvalueChange = this.onvalueChange.bind(this);
   }
 
   async onQuery() {
@@ -46,65 +46,53 @@ class ReportComponent extends React.Component {
       this.state.startKey,
       this.state.endKey
     );
-    
+
     await this.setState({ allRecord: allAtt });
     function filterSwitch(property, value) {
-      if (value === "none" || property == value || value == ""||value=='NONE') {
+      if (
+        value === "none" ||
+        property == value ||
+        value == "" ||
+        value == "NONE"
+      ) {
         return true;
       } else {
         return false;
       }
     }
 
-   let keg = []
-    let baff=this.state.allRecord
-   
+    let keg = [];
+    let baff = this.state.allRecord;
+
     baff.rows.map(obj => {
       obj.doc.staff.forEach(person => {
         keg.push(person);
       });
     });
-    
-   let deg = keg.filter(person => {
- 
+
+    let deg = keg.filter(person => {
       return (
-        
         filterSwitch(person["name"], this.state.nameVal) &&
         filterSwitch(person["title"], this.state.deptVal.toUpperCase()) &&
         filterSwitch(person["status"], this.state.statusVal)
       );
     });
-  await this.setState({filteredRec:deg})
-  console.log(deg)
-   keg=[];
-  
+    await this.setState({ filteredRec: deg });
+    console.log(deg);
+    keg = [];
   }
 
-
-  async onvalueChange(evt){
-
-        if(evt.target.name==='dept'){
-      await this.setState({deptVal:evt.target.value})
-
-    }
-    else if(evt.target.name==='status'){
-      await this.setState({statusVal:evt.target.value})
-      
-    }
-    else if(evt.target.name==='staff'){
-
-      await this.setState({nameVal:evt.target.value})
-
-      
-    }
-    else if(evt.target.name==='startKey'){
-      await this.setState({startKey:evt.target.value})
-      
-
-    }
-    else if(evt.target.name==='endKey'){
-    await this.setState({endKey:evt.target.value})
-    
+  async onvalueChange(evt) {
+    if (evt.target.name === "dept") {
+      await this.setState({ deptVal: evt.target.value });
+    } else if (evt.target.name === "status") {
+      await this.setState({ statusVal: evt.target.value });
+    } else if (evt.target.name === "staff") {
+      await this.setState({ nameVal: evt.target.value });
+    } else if (evt.target.name === "startKey") {
+      await this.setState({ startKey: evt.target.value });
+    } else if (evt.target.name === "endKey") {
+      await this.setState({ endKey: evt.target.value });
     }
   }
   render() {
@@ -114,12 +102,14 @@ class ReportComponent extends React.Component {
           <h2 className="mt-2 mr-2 font-semibold">NAME:</h2>
           <input
             className="mr-10  	rounded-sm border border-gray-200 text-gray-700 py-2 px-2 pr-8 w-50 text-center hover:border-blue-500"
-            name="staff" onChange={this.onvalueChange}
+            name="staff"
+            onChange={this.onvalueChange}
           />
           <h2 className="mt-2 mr-2 font-semibold">DEPT:</h2>
           <select
             className="mr-10  rounded-sm border border-gray-200 text-gray-700 py-2 px-2 pr-8 w-48 text-center hover:border-blue-500"
-            name="dept" onChange={this.onvalueChange}
+            name="dept"
+            onChange={this.onvalueChange}
           >
             <Selector
               label={[
@@ -184,11 +174,12 @@ class ReportComponent extends React.Component {
           <h2 className="mt-2 mr-2 font-semibold">STATUS:</h2>
           <select
             className="mr-10  border border-gray-200 text-gray-700 py-2 px-2 pr-8 w-48 text-center hover:border-blue-500"
-            name="status" onChange={this.onvalueChange}
+            name="status"
+            onChange={this.onvalueChange}
           >
             <Selector
               label={["None", "Late", "Early", "Absent", "Leave"]}
-              value={['none', "Late", "Early", "Absent", "Leave"]}
+              value={["none", "Late", "Early", "Absent", "Leave"]}
             ></Selector>
           </select>
         </div>
