@@ -45,7 +45,7 @@ return(
                 let absent=date['doc']['staff'].filter(person=> person.status=='Absent').length;
                 let leave=date['doc']['staff'].filter(person=> person.shift=='Leave').length;
                 let presentTotal=early+late;
-                let total=presentTotal;
+                let total=presentTotal+absent;
               return (
                   
                 <tr className="flex w-full mb-4">

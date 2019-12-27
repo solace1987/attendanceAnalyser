@@ -5,6 +5,6 @@ module.exports = {
       center: true,
     }
   },
-  variants: {},
+  variants: {backgroundColor:['responsive','hover','focus','active']},
   plugins: []
 }

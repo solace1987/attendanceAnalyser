@@ -57,13 +57,12 @@ class ShiftComponent extends React.Component {
     if (selectedStaff.includes(index)) {
       let loc = selectedStaff.indexOf(index);
       selectedStaff.splice(loc, 1);
-      //console.log(selectedStaff)
+      
       this.setState({ shiftStaff: selectedStaff });
     } else {
-      console.log(selectedStaff)
-
+      
       agregator = selectedStaff.concat(index);
-      console.log(selectedStaff)
+      
       this.setState({ shiftStaff: agregator });
     }
 
@@ -83,7 +82,7 @@ class ShiftComponent extends React.Component {
     await this.setState((state)=>state.meg= data);
     await this.setState( (state)=>state.shiftStaff=[]);
     selectedStaff=this.state.shiftStaff
-    console.log(`slected:${selectedStaff}`)
+    
   }
   tableListsFlag() {
        
@@ -92,11 +91,11 @@ class ShiftComponent extends React.Component {
  
   async componentDidMount() {
     const meg = await this.state.db.getallGppDocs("gppstaff");
-    console.log(meg)
+   
     this.setState({
       meg
     });
-    
+    console.log(meg)
     this.tableListsFlag();
   }
 

@@ -26,6 +26,9 @@ class Header extends React.Component{
       <a href="/analyser" className="block mt-4 lg:inline-block lg:mt-0 text-teal-lighter hover:text-white mr-4 font-semibold">
         Analyse Attendance Record
       </a>
+      <a href="/report" className="block mt-4 lg:inline-block lg:mt-0 text-teal-lighter hover:text-white mr-4 font-semibold">
+       Report
+      </a>
      
     </div>
      </div>

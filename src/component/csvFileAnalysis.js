@@ -3,6 +3,22 @@ import XLSX from "xlsx";
 import DB from "../db";
 import "../css/tailwind.css";
 import AllAttendance from "./allAttendance";
+import Calendar from "react-calendar";
+
+function reverseTimeFormat(time){
+  let hour=Math.floor(time/60);
+  let min=time%60
+  let clock;
+  if(hour>12){
+    return (`${hour-12}:${min} PM`)
+  }
+
+  else{
+    return  (`${hour}:${min} AM`)
+  }
+
+}
+
 
 class ExcelReader extends Component {
   constructor(props) {
@@ -16,10 +32,11 @@ class ExcelReader extends Component {
       worker: [],
       staff: [],
       allAtt: [],
-      date:'',
-      inputVal: "18-Oct-19",
+      date: "",
+      inputVal: "",
       isProcessed: false,
       isSaved: false,
+      onCalender: false
     };
     this.handleFile = this.handleFile.bind(this);
     this.handleChange = this.handleChange.bind(this);
@@ -27,7 +44,17 @@ class ExcelReader extends Component {
     this.processData = this.processData.bind(this);
     this.onDateChange = this.onDateChange.bind(this);
     this.onSave = this.onSave.bind(this);
-    this.maxOccur=this.maxOccur.bind(this);
+    this.maxOccur = this.maxOccur.bind(this);
+    this.onChangeIt = this.onChangeIt.bind(this);
+  }
+  async onChangeIt(inputVal) {
+    let data = inputVal;
+    await this.setState(state => {
+      state.inputVal = data;
+      state.onCalender = false;
+    });
+
+    console.log(this.state.onCalender);
   }
   maxOccur(newa) {
     let key = "";
@@ -42,7 +69,7 @@ class ExcelReader extends Component {
     let occurence = [];
 
     keyArr.forEach(date => {
-     let number = newa.filter(person => person.Date == date).length;
+      let number = newa.filter(person => person.Date == date).length;
       occurence.push(number);
     });
 
@@ -76,13 +103,13 @@ class ExcelReader extends Component {
       );
 
       this.setState({ dailyData: excelRows });
-     
+
       let parseData = this.parseAttendance();
       this.processData(parseData);
     }.bind(this);
     reader.readAsBinaryString(this.state.file);
   }
-  
+
   parseAttendance() {
     let attendance = [];
 
@@ -95,10 +122,11 @@ class ExcelReader extends Component {
       return hours * 60 + minutes;
     }
 
+    
+
     let dailyattend = this.state.dailyData;
     let staffs = this.state.worker.staff;
     //let date = this.state.inputVal.toLowerCase();
-   
 
     dailyattend.map(staff => {
       staff.Date = staff["Time"].split(" ")[0].toLowerCase();
@@ -107,7 +135,8 @@ class ExcelReader extends Component {
       );
       return staff;
     });
-   let date= this.maxOccur(dailyattend).toLowerCase()
+    let date = this.maxOccur(dailyattend).toLowerCase();
+   
     staffs.forEach(staff => {
       let tempArr = dailyattend.filter(value => {
         return value["Name"] == staff["name"] && value["Date"] == date;
@@ -127,33 +156,35 @@ class ExcelReader extends Component {
 
       if (clockIns.length == 0 && shiftname !== "Leave") {
         staffs[index].status = "Absent";
-      }
-      
-    else if(shiftname == "Leave"){
-
-      staffs[index].status = "Leave";
-    }
-      else {
+      } else if (shiftname == "Leave") {
+        staffs[index].status = "Leave";
+      } else {
         clockIns.forEach(comeIn => {
           if (
             shiftname == "Morning" &&
             comeIn["Time"] < shift[shiftname]["graceTime"]
           ) {
             staffs[index].status = "Early";
+            staffs[index]['time']=reverseTimeFormat(comeIn["Time"])
           } else if (
             comeIn["Time"] > shift[shiftname]["startTime"] - 240 &&
             comeIn["Time"] < shift[shiftname]["graceTime"]
           ) {
             staffs[index].status = "Early";
+            staffs[index]['time']=reverseTimeFormat(comeIn["Time"])
           } else if (comeIn["Time"] < shift[shiftname]["graceTime"] + 300) {
             staffs[index].status = "Late";
+            staffs[index]['time']=reverseTimeFormat(comeIn["Time"])
           }
+          else if(!staffs[index].status){ staffs[index].status = "Late";
+          staffs[index]['time']=reverseTimeFormat(comeIn["Time"])
+        }
         });
       }
     });
-    this.setState({ isProcessed: true, isSaved: false, staff: staffs });
 
-    
+    console.log(staffs)
+    this.setState({ isProcessed: true, isSaved: false, staff: staffs });
   }
   onDateChange(e) {
     this.setState({ inputVal: e.target.value });
@@ -162,17 +193,29 @@ class ExcelReader extends Component {
   async onSave() {
     let data = {};
     data.staff = this.state.staff;
-    data._id = this.state.inputVal;
+    
+   let formatDate= ()=>{
+
+      let date=new Date(this.state.inputVal)
+      
+      return   date.getDate() +"/"  +(date.getMonth() + 1) + 
+      
+      "/" +  date.getFullYear();
+      
+      };
+      data._id =formatDate()
+      data.staff.forEach((indiv,index)=>{indiv['date']=formatDate()})
+      console.log(data)
     this.state.db2.UpdateAttendance(data);
     let allAtt = await this.state.db2.getGppattend();
+    
+   
     this.setState({ isSaved: true, isProcessed: false, allAtt });
   }
   async componentDidMount() {
     const staff = await this.state.db.getallGppDocs("gppstaff");
     const shift = await this.state.db.getallGppDocs("shift");
-
-   
-
+console.log(staff)
     this.setState({
       worker: staff,
       shift
@@ -180,7 +223,21 @@ class ExcelReader extends Component {
   }
 
   render() {
-    let table = "";
+    let table;
+    let dateInput = "";
+
+    if (!this.state.onCalender) {
+      dateInput = (
+        <>
+          <input placeholder='Click to input Date' value={this.state.inputVal} onClick={() => this.setState({ onCalender: true })} />
+        </>
+      );
+    } else {
+      dateInput = (
+        <Calendar onChange={this.onChangeIt} value={this.state.inputVal} />
+      );
+    }
+
     if (this.state.isProcessed && !this.state.isSaved) {
       table = (
         <div>
@@ -266,13 +323,9 @@ class ExcelReader extends Component {
                 Input the correct date of attendance to be processed(
                 <span className="text-red-600">Very important</span>)
               </h3>
-              <input
-                value={this.state.inputVal}
-                onChange={this.onDateChange}
-                className=" border border-blue p-2 text-center"
-              ></input>
+                  {dateInput}
               <button
-                className="  bg-red-600 text-white font-bold py-2 px-8 mx-8 rounded opacity-30 my-8"
+                className="  bg-red-600 text-white font-bold py-2 px-8 mx-8 rounded opacity-30 my-8 active:bg-red-800"
                 onClick={this.handleFile}
               >
                 Process File

@@ -25,7 +25,21 @@ export default class DB{
 
         let record=await this.db.allDocs({
           include_docs: true,
-          descending:true
+         // descending:true
+           
+
+        })
+
+        return record;
+      }
+
+      async getGppattendRange(start, end){
+
+        let record=await this.db.allDocs({
+          include_docs: true,
+         // descending:true
+          startkey:start,
+          endkey:end  
 
         })
 
